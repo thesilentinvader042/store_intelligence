@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+
+  db:
+    # ONE-LINE CHANGE: postgres:15-alpine → timescale/timescaledb:latest-pg15
+    # Gets time_bucket() queries, automatic partitioning, 10-100x faster
+    # range scans on events table. Zero code changes needed.
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      POSTGRES_DB:       store_intel
+      POSTGRES_USER:     user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./scripts/init_timescale.sql:/docker-entrypoint-initdb.d/01_init_timescale.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d store_intel"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:         postgresql://user:pass@db:5432/store_intel
+      REDIS_URL:            redis://redis:6379
+      POS_CSV_PATH:         /data/pos_transactions.csv
+      STORE_ID:             ST1008
+      STORE_NAME:           Brigade_Bangalore
+      STAFF_VAL_MAX:        "80"
+      STAFF_SAT_MAX:        "50"
+      STAFF_CONF_THRESHOLD: "0.55"
+      STORE_OPEN_HOUR:      "11"
+      STORE_CLOSE_HOUR:     "22"
+    volumes:
+      - ./pos_transactions.csv:/data/pos_transactions.csv:ro
+      - ./store_layout.json:/project/store_layout.json:ro
+      - ./dashboard.html:/project/dashboard.html:ro
+      - ./clips:/clips:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pg_data:

@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Purplle Store Intelligence — Brigade Road</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #0a0a0f;
+    --bg2:      #111118;
+    --bg3:      #18181f;
+    --border:   #23232e;
+    --border2:  #2e2e3a;
+    --text:     #e8e8f0;
+    --muted:    #6b6b82;
+    --muted2:   #4a4a5e;
+    --accent:   #c084fc;
+    --accent2:  #a855f7;
+    --green:    #4ade80;
+    --yellow:   #fbbf24;
+    --red:      #f87171;
+    --blue:     #60a5fa;
+    --pink:     #f472b6;
+    --r:        8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Noise texture overlay ───────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── Header ──────────────────────────────────────────── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--pink) 100%);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-top: 1px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .store-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 5px 14px 5px 10px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .store-badge span { color: var(--text); }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse-dot 2s infinite;
+  }
+
+  .status-dot.warn  { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+  .status-dot.error { background: var(--red);    box-shadow: 0 0 6px var(--red); }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  .refresh-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .refresh-btn:hover { border-color: var(--accent2); color: var(--accent); }
+  .refresh-btn.spinning svg { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── API config bar ──────────────────────────────────── */
+  .config-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .config-bar input {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 5px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    width: 260px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .config-bar input:focus { border-color: var(--accent2); }
+
+  .config-bar select {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 5px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .apply-btn {
+    background: linear-gradient(135deg, var(--accent2), var(--pink));
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+
+  .apply-btn:hover { opacity: 0.85; }
+
+  /* ── Main layout ─────────────────────────────────────── */
+  main {
+    padding: 28px 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 14px;
+  }
+
+  /* ── KPI row ─────────────────────────────────────────── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .kpi {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi:hover { border-color: var(--border2); }
+
+  .kpi::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--kpi-color, var(--accent));
+    opacity: 0.7;
+  }
+
+  .kpi-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-value.loading { color: var(--muted2); font-size: 20px; animation: blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .kpi-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+
+  .badge-high   { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .badge-medium { background: rgba(251,191,36,0.1);  color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+  .badge-low    { background: rgba(248,113,113,0.1); color: var(--red);    border: 1px solid rgba(248,113,113,0.2); }
+
+  /* ── Middle row: funnel + health ─────────────────────── */
+  .middle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 24px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title .period {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  /* ── Funnel ──────────────────────────────────────────── */
+  .funnel-stages { display: flex; flex-direction: column; gap: 10px; }
+
+  .funnel-stage {
+    display: grid;
+    grid-template-columns: 120px 1fr 60px 60px;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .funnel-name { font-size: 11px; color: var(--muted); }
+
+  .funnel-bar-track {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .funnel-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--pink));
+    transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+    width: 0%;
+  }
+
+  .funnel-count { font-size: 13px; font-weight: 500; color: var(--text); text-align: right; }
+
+  .funnel-pct {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .funnel-drop {
+    font-size: 10px;
+    color: var(--red);
+  }
+
+  /* ── Health ──────────────────────────────────────────── */
+  .health-overall {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--bg3);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .health-overall .label { color: var(--muted); font-size: 11px; }
+  .health-overall .value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-left: auto; }
+
+  .store-health-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .store-health-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .health-store-id { font-size: 12px; color: var(--text); flex: 1; }
+  .health-lag { font-size: 11px; color: var(--muted); }
+  .health-status { font-size: 11px; font-weight: 500; }
+  .health-status.ok       { color: var(--green); }
+  .health-status.stale    { color: var(--yellow); }
+  .health-status.no-data  { color: var(--muted); }
+
+  /* ── Anomalies ───────────────────────────────────────── */
+  .anomalies-section { margin-bottom: 28px; }
+
+  .anomaly-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .anomaly-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--sev-color, var(--muted));
+    border-radius: var(--r);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: start;
+    animation: slide-in 0.3s ease;
+  }
+
+  @keyframes slide-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  .anomaly-sev {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sev-critical { background: rgba(248,113,113,0.12); color: var(--red);    border: 1px solid rgba(248,113,113,0.25); }
+  .sev-warn     { background: rgba(251,191,36,0.12);  color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+  .sev-info     { background: rgba(96,165,250,0.12);  color: var(--blue);   border: 1px solid rgba(96,165,250,0.25); }
+
+  .anomaly-body { display: flex; flex-direction: column; gap: 4px; }
+  .anomaly-type { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; color: var(--text); }
+  .anomaly-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .anomaly-action { font-size: 11px; color: var(--accent); margin-top: 2px; }
+  .anomaly-action::before { content: '→ '; }
+
+  .anomaly-time { font-size: 10px; color: var(--muted2); white-space: nowrap; }
+
+  .no-anomalies {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 32px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .no-anomalies .icon { font-size: 24px; margin-bottom: 8px; }
+
+  /* ── Floor map ───────────────────────────────────────── */
+  .floormap-section { margin-bottom: 28px; }
+
+  .floormap-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 24px;
+  }
+
+  .floormap-wrap {
+    position: relative;
+    background: var(--bg3);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    aspect-ratio: 9 / 4;
+    margin-top: 4px;
+  }
+
+  .zone-cell {
+    position: absolute;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4px;
+    cursor: default;
+    transition: all 0.2s;
+    overflow: hidden;
+  }
+
+  .zone-cell:hover { z-index: 10; border-color: var(--accent2); }
+
+  .zone-cell .zone-name {
+    font-size: 9px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.3;
+    color: rgba(255,255,255,0.7);
+    pointer-events: none;
+  }
+
+  .zone-cell .zone-count {
+    position: absolute;
+    top: 3px; right: 5px;
+    font-size: 9px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    font-family: 'Syne', sans-serif;
+  }
+
+  /* zone heat colours */
+  .heat-0 { background: rgba(30,30,40,0.8); }
+  .heat-1 { background: rgba(107,33,168,0.25); }
+  .heat-2 { background: rgba(126,34,206,0.38); }
+  .heat-3 { background: rgba(147,51,234,0.50); }
+  .heat-4 { background: rgba(168,85,247,0.62); }
+  .heat-5 { background: rgba(192,132,252,0.72); }
+
+  /* special zones */
+  .zone-billing  { border-color: rgba(251,191,36,0.4) !important; }
+  .zone-entry    { border-color: rgba(96,165,250,0.4) !important; }
+
+  .map-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 2px; }
+
+  /* ── Ingest panel ────────────────────────────────────── */
+  .ingest-section { margin-bottom: 28px; }
+
+  .ingest-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 24px;
+  }
+
+  .ingest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    width: 100%;
+    height: 140px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.15s;
+  }
+
+  textarea:focus { border-color: var(--accent2); }
+
+  .ingest-result {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    padding: 12px;
+    height: 140px;
+    overflow-y: auto;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--muted);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .ingest-result.success { color: var(--green); border-color: rgba(74,222,128,0.3); }
+  .ingest-result.error   { color: var(--red);   border-color: rgba(248,113,113,0.3); }
+
+  .ingest-btn {
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--accent2), var(--pink));
+    border: none;
+    border-radius: 6px;
+    padding: 10px 24px;
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ingest-btn:hover { opacity: 0.85; }
+  .ingest-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Footer ──────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted2);
+    position: relative;
+    z-index: 1;
+  }
+
+  .last-refresh { color: var(--muted); }
+
+  /* ── Skeleton loader ─────────────────────────────────── */
+  .skeleton {
+    background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    height: 14px;
+  }
+
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* ── Responsive ──────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .kpi-grid    { grid-template-columns: repeat(2, 1fr); }
+    .middle-row  { grid-template-columns: 1fr; }
+    .ingest-grid { grid-template-columns: 1fr; }
+    main { padding: 16px; }
+    header { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">P</div>
+    <div>
+      <div class="logo-text">Store Intelligence</div>
+      <div class="logo-sub">Brigade Road, Bangalore</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="store-badge">
+      <div class="status-dot" id="globalDot"></div>
+      <span id="globalStatus">connecting…</span>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()">
+      <svg id="refreshIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+</header>
+
+<div class="config-bar">
+  <span>API</span>
+  <input type="text" id="apiBase" value="http://localhost:8000" placeholder="http://localhost:8000"/>
+  <span>Store</span>
+  <input type="text" id="storeId" value="ST1008" placeholder="ST1008" style="width:120px"/>
+  <button class="apply-btn" onclick="refreshAll()">Apply</button>
+  <span style="margin-left:auto">Auto-refresh</span>
+  <select id="autoInterval" onchange="setupAutoRefresh()">
+    <option value="0">Off</option>
+    <option value="30">30s</option>
+    <option value="60" selected>60s</option>
+    <option value="300">5m</option>
+  </select>
+</div>
+
+<main>
+
+  <!-- KPIs -->
+  <div class="section-label">Live Metrics</div>
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi" style="--kpi-color:var(--accent)">
+      <div class="kpi-label">Unique Visitors</div>
+      <div class="kpi-value loading" id="kpiVisitors">—</div>
+      <div class="kpi-sub" id="kpiPeriod">loading…</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--green)">
+      <div class="kpi-label">Conversion Rate</div>
+      <div class="kpi-value loading" id="kpiConversion">—</div>
+      <div class="kpi-sub">visitors → purchase</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--blue)">
+      <div class="kpi-label">Avg Dwell Time</div>
+      <div class="kpi-value loading" id="kpiDwell">—</div>
+      <div class="kpi-sub">minutes per visitor</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--pink)">
+      <div class="kpi-label">Zone Visits</div>
+      <div class="kpi-value loading" id="kpiZoneVisits">—</div>
+      <div class="kpi-sub">total zone entries</div>
+    </div>
+    <div class="kpi" style="--kpi-color:var(--yellow)">
+      <div class="kpi-label">Peak Hour</div>
+      <div class="kpi-value loading" id="kpiPeak">—</div>
+      <div class="kpi-sub" id="kpiConfidence">data confidence: —</div>
+    </div>
+  </div>
+
+  <!-- Funnel + Health -->
+  <div class="middle-row">
+
+    <div class="card">
+      <div class="card-title">
+        Conversion Funnel
+        <span class="period" id="funnelPeriod"></span>
+      </div>
+      <div class="funnel-stages" id="funnelStages">
+        <div class="skeleton" style="height:32px"></div>
+        <div class="skeleton" style="height:32px;margin-top:8px"></div>
+        <div class="skeleton" style="height:32px;margin-top:8px"></div>
+        <div class="skeleton" style="height:32px;margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">System Health</div>
+      <div id="healthPanel">
+        <div class="skeleton" style="height:44px;margin-bottom:8px"></div>
+        <div class="skeleton" style="height:44px"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Anomalies -->
+  <div class="anomalies-section">
+    <div class="section-label">Active Anomalies</div>
+    <div id="anomalyList">
+      <div class="skeleton" style="height:72px"></div>
+    </div>
+  </div>
+
+  <!-- Floor Map -->
+  <div class="floormap-section">
+    <div class="floormap-card">
+      <div class="card-title">
+        Store Floor Map — Zone Activity
+        <span class="period">visit heatmap</span>
+      </div>
+      <div class="floormap-wrap" id="floormapWrap">
+        <!-- zones injected by JS -->
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(30,30,40,0.8)"></div> No activity</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(126,34,206,0.38)"></div> Low</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(168,85,247,0.62)"></div> Medium</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:rgba(192,132,252,0.72)"></div> High</div>
+        <div class="legend-item" style="margin-left:auto">
+          <div class="legend-swatch" style="background:transparent;border:1px solid rgba(251,191,36,0.4)"></div> Billing
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:transparent;border:1px solid rgba(96,165,250,0.4)"></div> Entry
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ingest panel -->
+  <div class="ingest-section">
+    <div class="section-label">Event Ingest</div>
+    <div class="ingest-card">
+      <div class="card-title">POST /events/ingest</div>
+      <div class="ingest-grid">
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Paste event JSON array (or single event object)</div>
+          <textarea id="ingestPayload" placeholder='[
+  {
+    "event_id":   "evt_001",
+    "event_type": "ENTRY",
+    "visitor_id": "VIS_abc12345",
+    "store_id":   "ST1008",
+    "camera_id":  "CAM_FLOOR_FRONT",
+    "timestamp":  "2026-04-10T12:00:00+05:30",
+    "is_staff":   false,
+    "confidence": 0.95
+  }
+]'></textarea>
+          <button class="ingest-btn" id="ingestBtn" onclick="doIngest()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+              <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>
+            Send Events
+          </button>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Response</div>
+          <div class="ingest-result" id="ingestResult">Response will appear here…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Purplle Store Intelligence · ST1008 · Brigade Road, Bangalore</span>
+  <span class="last-refresh" id="lastRefresh">Never refreshed</span>
+</footer>
+
+<script>
+// ── Zone layout (mirrors store_layout.json polygons) ──────────────────────────
+// Each zone: [x1, y1, x2, y2] normalised 0-1
+const ZONES = [
+  { id:'ZONE_ENTRY',           name:'Entry',                 x1:0.00, y1:0.20, x2:0.06, y2:0.80, type:'entry_exit'     },
+  { id:'ZONE_EB_KOREAN',       name:'EB Korean',             x1:0.06, y1:0.02, x2:0.17, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_TFS',             name:'The Face Shop',         x1:0.17, y1:0.02, x2:0.30, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_GOOD_VIBES',      name:'Good Vibes',            x1:0.30, y1:0.02, x2:0.42, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_DERMDOC',         name:'DermDoc',               x1:0.42, y1:0.02, x2:0.52, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_MINIMALIST',      name:'Minimalist',            x1:0.52, y1:0.02, x2:0.63, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_AQUALOGICA',      name:'Aqualogica',            x1:0.63, y1:0.02, x2:0.73, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_LAKME_SKIN',      name:'Lakme Skin',            x1:0.73, y1:0.02, x2:0.83, y2:0.25, type:'brand_shelf'    },
+  { id:'ZONE_ACCESSORIES',     name:'Accessories',           x1:0.83, y1:0.02, x2:0.96, y2:0.45, type:'brand_shelf'    },
+  { id:'ZONE_FRAGRANCE_NAIL',  name:'Fragrance & Nail',      x1:0.22, y1:0.28, x2:0.36, y2:0.72, type:'service_counter'},
+  { id:'ZONE_FOH',             name:'F.O.H',                 x1:0.36, y1:0.28, x2:0.62, y2:0.72, type:'floor'          },
+  { id:'ZONE_MAKEUP_UNIT',     name:'Makeup Unit',           x1:0.46, y1:0.35, x2:0.62, y2:0.65, type:'service_counter'},
+  { id:'ZONE_BILLING',         name:'Billing',               x1:0.78, y1:0.25, x2:0.92, y2:0.65, type:'billing'        },
+  { id:'ZONE_PMU',             name:'PMU',                   x1:0.84, y1:0.55, x2:0.96, y2:0.85, type:'service_counter'},
+  { id:'ZONE_MAYBELLINE',      name:'Maybelline',            x1:0.06, y1:0.75, x2:0.18, y2:0.98, type:'brand_shelf'    },
+  { id:'ZONE_FACES_CANADA',    name:'Faces Canada',          x1:0.18, y1:0.75, x2:0.30, y2:0.98, type:'brand_shelf'    },
+  { id:'ZONE_LAKME_COLOUR',    name:'Lakme Colour',          x1:0.30, y1:0.75, x2:0.40, y2:0.98, type:'brand_shelf'    },
+  { id:'ZONE_COLORBAR_SUGAR',  name:'Colorbar+Sugar',        x1:0.40, y1:0.75, x2:0.52, y2:0.98, type:'brand_shelf'    },
+  { id:'ZONE_SWISS_RENEE',     name:'Swiss/Renee/NYBae',     x1:0.52, y1:0.75, x2:0.66, y2:0.98, type:'brand_shelf'    },
+  { id:'ZONE_ALPS_GOODNESS',   name:'Alps Goodness',         x1:0.66, y1:0.75, x2:0.76, y2:0.98, type:'brand_shelf'    },
+  { id:'ZONE_STREAX',          name:'Streax',                x1:0.76, y1:0.75, x2:0.86, y2:0.98, type:'brand_shelf'    },
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let autoTimer  = null;
+let zoneVisits = {};   // zone_id → count (from funnel zone events)
+
+function api()     { return document.getElementById('apiBase').value.replace(/\/$/, ''); }
+function storeId() { return document.getElementById('storeId').value.trim(); }
+
+// ── Floor map ─────────────────────────────────────────────────────────────────
+function buildFloorMap() {
+  const wrap = document.getElementById('floormapWrap');
+  wrap.innerHTML = '';
+  ZONES.forEach(z => {
+    const el = document.createElement('div');
+    el.className = 'zone-cell heat-0';
+    el.dataset.zoneId = z.id;
+    if (z.type === 'billing')    el.classList.add('zone-billing');
+    if (z.type === 'entry_exit') el.classList.add('zone-entry');
+    el.style.left   = (z.x1 * 100) + '%';
+    el.style.top    = (z.y1 * 100) + '%';
+    el.style.width  = ((z.x2 - z.x1) * 100) + '%';
+    el.style.height = ((z.y2 - z.y1) * 100) + '%';
+    el.innerHTML = `<div class="zone-name">${z.name}</div><div class="zone-count" id="zc_${z.id}"></div>`;
+    el.title = z.name;
+    wrap.appendChild(el);
+  });
+}
+
+function updateFloorMap(totalZoneVisits) {
+  // Distribute total zone visits proportionally using stored zone data
+  // In a full implementation zone-level counts would come from a dedicated endpoint
+  const entries = Object.entries(zoneVisits);
+  const maxCount = entries.length > 0 ? Math.max(...entries.map(([,v]) => v), 1) : 1;
+
+  ZONES.forEach(z => {
+    const el = document.querySelector(`[data-zone-id="${z.id}"]`);
+    if (!el) return;
+    const count = zoneVisits[z.id] || 0;
+    const ratio = count / maxCount;
+    el.className = el.className.replace(/heat-\d/, '');
+    const heat = count === 0 ? 0 : ratio < 0.2 ? 1 : ratio < 0.4 ? 2 : ratio < 0.6 ? 3 : ratio < 0.8 ? 4 : 5;
+    el.classList.add(`heat-${heat}`);
+    if (z.type === 'billing')    el.classList.add('zone-billing');
+    if (z.type === 'entry_exit') el.classList.add('zone-entry');
+    const countEl = document.getElementById(`zc_${z.id}`);
+    if (countEl) countEl.textContent = count > 0 ? count : '';
+  });
+}
+
+// ── Fetch helpers ─────────────────────────────────────────────────────────────
+async function fetchJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ── Metrics ───────────────────────────────────────────────────────────────────
+async function loadMetrics() {
+  try {
+    const d = await fetchJSON(`${api()}/stores/${storeId()}/metrics`);
+
+    document.getElementById('kpiVisitors').textContent   = d.unique_visitors ?? '—';
+    document.getElementById('kpiVisitors').classList.remove('loading');
+
+    const cvr = d.conversion_rate != null ? (d.conversion_rate * 100).toFixed(1) + '%' : '—';
+    document.getElementById('kpiConversion').textContent = cvr;
+    document.getElementById('kpiConversion').classList.remove('loading');
+
+    const dwell = d.avg_dwell_minutes != null ? d.avg_dwell_minutes.toFixed(1) : '—';
+    document.getElementById('kpiDwell').textContent = dwell;
+    document.getElementById('kpiDwell').classList.remove('loading');
+
+    document.getElementById('kpiZoneVisits').textContent = d.total_zone_visits ?? '—';
+    document.getElementById('kpiZoneVisits').classList.remove('loading');
+
+    const peak = d.peak_hour != null ? `${String(d.peak_hour).padStart(2,'0')}:00` : '—';
+    document.getElementById('kpiPeak').textContent = peak;
+    document.getElementById('kpiPeak').classList.remove('loading');
+
+    const conf = d.data_confidence || 'low';
+    document.getElementById('kpiConfidence').innerHTML =
+      `confidence: <span class="kpi-badge badge-${conf}">${conf}</span>`;
+
+    const ps = d.period_start ? new Date(d.period_start).toLocaleDateString('en-IN',{month:'short',day:'numeric'}) : '';
+    const pe = d.period_end   ? new Date(d.period_end).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '';
+    document.getElementById('kpiPeriod').textContent = ps ? `${ps} · till ${pe}` : '';
+
+  } catch(e) {
+    ['kpiVisitors','kpiConversion','kpiDwell','kpiZoneVisits','kpiPeak'].forEach(id => {
+      document.getElementById(id).textContent = 'ERR';
+    });
+  }
+}
+
+// ── Funnel ────────────────────────────────────────────────────────────────────
+async function loadFunnel() {
+  try {
+    const d = await fetchJSON(`${api()}/stores/${storeId()}/funnel`);
+    document.getElementById('funnelPeriod').textContent = d.period || '';
+
+    const maxCount = d.stages.length > 0 ? d.stages[0].count || 1 : 1;
+    const html = d.stages.map((s, i) => {
+      const pct = s.pct_of_prev != null ? (s.pct_of_prev * 100).toFixed(0) + '%' : (i === 0 ? '100%' : '—');
+      const drop = s.pct_of_prev != null && i > 0
+        ? `<span class="funnel-drop">↓ ${(100 - s.pct_of_prev * 100).toFixed(0)}%</span>` : '';
+      const barPct = maxCount > 0 ? (s.count / maxCount * 100) : 0;
+      return `
+        <div class="funnel-stage">
+          <div class="funnel-name">${s.stage}</div>
+          <div class="funnel-bar-track">
+            <div class="funnel-bar-fill" style="width:${barPct}%"></div>
+          </div>
+          <div class="funnel-count">${s.count}</div>
+          <div class="funnel-pct">${pct}${drop}</div>
+        </div>`;
+    }).join('');
+    document.getElementById('funnelStages').innerHTML = html || '<div style="color:var(--muted);font-size:12px">No funnel data yet</div>';
+
+    // Animate bars after render
+    setTimeout(() => {
+      document.querySelectorAll('.funnel-bar-fill').forEach(b => {
+        b.style.width = b.style.width; // trigger reflow
+      });
+    }, 50);
+
+  } catch(e) {
+    document.getElementById('funnelStages').innerHTML = '<div style="color:var(--red);font-size:11px">Failed to load funnel</div>';
+  }
+}
+
+// ── Health ────────────────────────────────────────────────────────────────────
+async function loadHealth() {
+  const dot    = document.getElementById('globalDot');
+  const status = document.getElementById('globalStatus');
+  try {
+    const d = await fetchJSON(`${api()}/health`);
+
+    const overallClass = d.status === 'OK' ? '' : d.status === 'DEGRADED' ? 'warn' : 'error';
+    dot.className = `status-dot ${overallClass}`;
+    status.textContent = d.status;
+
+    const storeHtml = (d.stores || []).map(s => {
+      const cls  = s.status === 'OK' ? 'ok' : s.status === 'STALE_FEED' ? 'stale' : 'no-data';
+      const lag  = s.lag_seconds != null ? `${Math.round(s.lag_seconds)}s ago` : 'no data';
+      const last = s.last_event_time
+        ? new Date(s.last_event_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})
+        : '—';
+      return `
+        <div class="store-health-item">
+          <div class="status-dot ${s.status === 'OK' ? '' : s.status === 'STALE_FEED' ? 'warn' : 'error'}"></div>
+          <div class="health-store-id">${s.store_id}</div>
+          <div class="health-lag">last event: ${last} · ${lag}</div>
+          <div class="health-status ${cls}">${s.status}</div>
+        </div>`;
+    }).join('');
+
+    const overallHtml = `
+      <div class="health-overall">
+        <div class="status-dot ${overallClass}"></div>
+        <div class="label">System</div>
+        <div class="value" style="color:${d.status==='OK'?'var(--green)':d.status==='DEGRADED'?'var(--yellow)':'var(--red)'}">${d.status}</div>
+      </div>`;
+
+    document.getElementById('healthPanel').innerHTML = overallHtml +
+      `<div class="store-health-list">${storeHtml || '<div style="color:var(--muted);font-size:12px;padding:8px">No stores registered</div>'}</div>`;
+
+  } catch(e) {
+    dot.className = 'status-dot error';
+    status.textContent = 'unreachable';
+    document.getElementById('healthPanel').innerHTML =
+      '<div style="color:var(--red);font-size:11px;padding:8px">Cannot reach API — is it running?</div>';
+  }
+}
+
+// ── Anomalies ─────────────────────────────────────────────────────────────────
+async function loadAnomalies() {
+  try {
+    const d = await fetchJSON(`${api()}/stores/${storeId()}/anomalies`);
+
+    if (!d.anomalies || d.anomalies.length === 0) {
+      document.getElementById('anomalyList').innerHTML = `
+        <div class="no-anomalies">
+          <div class="icon">✓</div>
+          <div>No active anomalies — store operating normally</div>
+        </div>`;
+      return;
+    }
+
+    const sevColor = { CRITICAL: 'var(--red)', WARN: 'var(--yellow)', INFO: 'var(--blue)' };
+    const html = d.anomalies.map(a => {
+      const t = new Date(a.detected_at).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      const sevCls = a.severity === 'CRITICAL' ? 'sev-critical' : a.severity === 'WARN' ? 'sev-warn' : 'sev-info';
+      return `
+        <div class="anomaly-item" style="--sev-color:${sevColor[a.severity]||'var(--muted)'}">
+          <div class="anomaly-sev ${sevCls}">${a.severity}</div>
+          <div class="anomaly-body">
+            <div class="anomaly-type">${a.anomaly_type.replace(/_/g,' ')}</div>
+            <div class="anomaly-desc">${a.description}</div>
+            <div class="anomaly-action">${a.suggested_action}</div>
+          </div>
+          <div class="anomaly-time">${t}</div>
+        </div>`;
+    }).join('');
+    document.getElementById('anomalyList').innerHTML = `<div class="anomaly-list">${html}</div>`;
+
+  } catch(e) {
+    document.getElementById('anomalyList').innerHTML =
+      '<div style="color:var(--red);font-size:11px;padding:12px">Failed to load anomalies</div>';
+  }
+}
+
+// ── Ingest ────────────────────────────────────────────────────────────────────
+async function doIngest() {
+  const btn = document.getElementById('ingestBtn');
+  const out = document.getElementById('ingestResult');
+  const raw = document.getElementById('ingestPayload').value.trim();
+
+  btn.disabled = true;
+  out.className = 'ingest-result';
+  out.textContent = 'Sending…';
+
+  try {
+    let parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) parsed = [parsed];
+    const body = JSON.stringify({ events: parsed });
+
+    const r = await fetch(`${api()}/events/ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+    const resp = await r.json();
+    out.className = r.ok ? 'ingest-result success' : 'ingest-result error';
+    out.textContent = JSON.stringify(resp, null, 2);
+    if (r.ok) refreshAll();
+
+  } catch(e) {
+    out.className = 'ingest-result error';
+    out.textContent = `Error: ${e.message}`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Refresh all ───────────────────────────────────────────────────────────────
+async function refreshAll() {
+  const btn  = document.getElementById('refreshBtn');
+  const icon = document.getElementById('refreshIcon');
+  btn.classList.add('spinning');
+  icon.style.animation = 'spin 1s linear infinite';
+
+  await Promise.allSettled([
+    loadMetrics(),
+    loadFunnel(),
+    loadHealth(),
+    loadAnomalies(),
+  ]);
+
+  btn.classList.remove('spinning');
+  icon.style.animation = '';
+  document.getElementById('lastRefresh').textContent =
+    'Last refreshed: ' + new Date().toLocaleTimeString('en-IN');
+}
+
+// ── Auto-refresh ──────────────────────────────────────────────────────────────
+function setupAutoRefresh() {
+  clearInterval(autoTimer);
+  const secs = parseInt(document.getElementById('autoInterval').value);
+  if (secs > 0) autoTimer = setInterval(refreshAll, secs * 1000);
+}
+
+// ── WebSocket live feed ──────────────────────────────────────────────────────
+let ws = null;
+let wsRetryTimer = null;
+
+function wsUrl() {
+  const base = api().replace(/^http/, 'ws');
+  return `${base}/ws/${storeId()}`;
+}
+
+function connectWS() {
+  if (ws) { try { ws.close(); } catch(e){} }
+  clearTimeout(wsRetryTimer);
+
+  try {
+    ws = new WebSocket(wsUrl());
+  } catch(e) {
+    setWsStatus('error'); return;
+  }
+
+  ws.onopen = () => {
+    setWsStatus('ok');
+    // Send ping to confirm connection
+    ws.send('ping');
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      if (msg.type === 'events' && msg.count > 0) {
+        // New events ingested — update footer and refresh metrics display
+        document.getElementById('lastRefresh').textContent =
+          `Live · ${msg.count} new event${msg.count>1?'s':''} · ${new Date().toLocaleTimeString('en-IN')}`;
+        loadMetrics();
+        loadAnomalies();
+      } else if (msg.type === 'metrics') {
+        // Server pushed a fresh metrics snapshot — update KPIs immediately
+        applyMetrics(msg.data);
+      }
+    } catch(e) {}
+  };
+
+  ws.onclose = () => {
+    setWsStatus('off');
+    // Reconnect after 5 seconds
+    wsRetryTimer = setTimeout(connectWS, 5000);
+  };
+
+  ws.onerror = () => setWsStatus('error');
+}
+
+function setWsStatus(state) {
+  const dot   = document.getElementById('wsDot');
+  const label = document.getElementById('wsStatus');
+  const map   = {
+    ok:    ['var(--green)',  'ws: live'],
+    off:   ['var(--muted2)', 'ws: off'],
+    error: ['var(--red)',    'ws: err'],
+  };
+  const [color, text] = map[state] || map.off;
+  dot.style.background  = color;
+  dot.style.boxShadow   = state === 'ok' ? `0 0 6px ${color}` : 'none';
+  label.textContent     = text;
+}
+
+function applyMetrics(d) {
+  if (!d) return;
+  if (d.unique_visitors != null) {
+    document.getElementById('kpiVisitors').textContent = d.unique_visitors;
+    document.getElementById('kpiVisitors').classList.remove('loading');
+  }
+  if (d.conversion_rate != null) {
+    document.getElementById('kpiConversion').textContent = (d.conversion_rate * 100).toFixed(1) + '%';
+    document.getElementById('kpiConversion').classList.remove('loading');
+  }
+  if (d.avg_dwell_minutes != null) {
+    document.getElementById('kpiDwell').textContent = d.avg_dwell_minutes.toFixed(1);
+    document.getElementById('kpiDwell').classList.remove('loading');
+  }
+  if (d.total_zone_visits != null) {
+    document.getElementById('kpiZoneVisits').textContent = d.total_zone_visits;
+    document.getElementById('kpiZoneVisits').classList.remove('loading');
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildFloorMap();
+refreshAll();
+setupAutoRefresh();
+connectWS();
+</script>
+</body>
+</html>

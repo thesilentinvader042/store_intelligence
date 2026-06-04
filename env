@@ -1,0 +1,35 @@
+# ── Store ─────────────────────────────────────────────────────────────────────
+STORE_ID=ST1008
+STORE_NAME=Brigade_Bangalore
+
+# ── Database ──────────────────────────────────────────────────────────────────
+# Local development (SQLite — no Docker needed)
+DATABASE_URL=sqlite:///./store_intel.db
+
+# Docker Compose (PostgreSQL) — uncomment when using docker-compose up
+DATABASE_URL=postgresql://user:pass@localhost:5432/store_intel
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+REDIS_URL=redis://localhost:6379
+
+# ── POS data ─────────────────────────────────────────────────────────────────
+POS_CSV_PATH=pos_transactions.csv
+
+# ── Staff classifier — Purplle staff wear BLACK uniforms ─────────────────────
+# Black = any hue, very low saturation AND low value in HSV
+# Strategy: use value-channel threshold instead of hue range
+STAFF_HSV_HUE_LOW=0
+STAFF_HSV_HUE_HIGH=179
+STAFF_SAT_MIN=0
+STAFF_SAT_MAX=50
+STAFF_VAL_MAX=80
+STAFF_CONF_THRESHOLD=0.55
+
+# ── Store hours (IST = UTC+5:30) ──────────────────────────────────────────────
+STORE_OPEN_HOUR=11
+STORE_CLOSE_HOUR=22
+
+# ── CCTV clips directory ─────────────────────────────────────────────────────
+CLIP_DIR=./clips
+LAYOUT_PATH=./store_layout.json
+OUTPUT_EVENTS=./events.jsonl

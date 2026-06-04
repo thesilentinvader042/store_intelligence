@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+purp1/
+env/
+.venv/
+
+# Secrets
+env
+.env
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Pipeline outputs (large files — ingest via API instead)
+events.jsonl
+*.jsonl
+
+# CCTV footage (too large for git)
+clips/
+
+# YOLO model weights (auto-downloaded on first run)
+*.pt
+*.onnx
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Test artifacts
+.coverage
+htmlcov/
+.pytest_cache/

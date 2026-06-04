@@ -1,0 +1,190 @@
+{
+  "store_id": "ST1008",
+  "store_name": "Brigade_Bangalore",
+  "city": "Bangalore",
+  "address": "Brigade Road, Bangalore",
+
+  "dimensions_mm": {
+    "note": "Approximate store dimensions from floor plan annotations",
+    "width": 9700,
+    "depth": 4020
+  },
+
+  "cameras": {
+    "CAM_ENTRY": {
+      "description": "Entry glass door camera — covers entry zone on far left",
+      "fov_polygon": [[0.00, 0.10], [0.12, 0.10], [0.12, 0.90], [0.00, 0.90]]
+    },
+    "CAM_FLOOR_FRONT": {
+      "description": "Overhead camera covering front/bottom shelf row and FOH",
+      "fov_polygon": [[0.00, 0.00], [1.00, 0.00], [1.00, 0.55], [0.00, 0.55]]
+    },
+    "CAM_FLOOR_REAR": {
+      "description": "Overhead camera covering back shelf row",
+      "fov_polygon": [[0.00, 0.45], [1.00, 0.45], [1.00, 1.00], [0.00, 1.00]]
+    },
+    "CAM_CASH": {
+      "description": "Cash counter area camera",
+      "fov_polygon": [[0.70, 0.15], [1.00, 0.15], [1.00, 0.90], [0.70, 0.90]]
+    }
+  },
+
+  "zones": [
+    {
+      "zone_id": "ZONE_ENTRY",
+      "zone_name": "Entry",
+      "zone_type": "entry_exit",
+      "polygon": [[0.00, 0.20], [0.06, 0.20], [0.06, 0.80], [0.00, 0.80]],
+      "note": "Glass door entry on far left of store"
+    },
+    {
+      "zone_id": "ZONE_EB_KOREAN",
+      "zone_name": "EB Korean",
+      "zone_type": "brand_shelf",
+      "brand": "EB Korean",
+      "polygon": [[0.06, 0.02], [0.17, 0.02], [0.17, 0.25], [0.06, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_TFS",
+      "zone_name": "The Face Shop",
+      "zone_type": "brand_shelf",
+      "brand": "The Face Shop",
+      "polygon": [[0.17, 0.02], [0.30, 0.02], [0.30, 0.25], [0.17, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_GOOD_VIBES",
+      "zone_name": "Good Vibes",
+      "zone_type": "brand_shelf",
+      "brand": "Good Vibes",
+      "polygon": [[0.30, 0.02], [0.42, 0.02], [0.42, 0.25], [0.30, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_DERMDOC",
+      "zone_name": "DermDoc",
+      "zone_type": "brand_shelf",
+      "brand": "DERMDOC",
+      "polygon": [[0.42, 0.02], [0.52, 0.02], [0.52, 0.25], [0.42, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_MINIMALIST",
+      "zone_name": "Minimalist",
+      "zone_type": "brand_shelf",
+      "brand": "Minimalist",
+      "polygon": [[0.52, 0.02], [0.63, 0.02], [0.63, 0.25], [0.52, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_AQUALOGICA",
+      "zone_name": "Aqualogica",
+      "zone_type": "brand_shelf",
+      "brand": "Aqualogica",
+      "polygon": [[0.63, 0.02], [0.73, 0.02], [0.73, 0.25], [0.63, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_LAKME_SKIN",
+      "zone_name": "Lakme Skin",
+      "zone_type": "brand_shelf",
+      "brand": "Lakme",
+      "polygon": [[0.73, 0.02], [0.83, 0.02], [0.83, 0.25], [0.73, 0.25]]
+    },
+    {
+      "zone_id": "ZONE_ACCESSORIES",
+      "zone_name": "Accessories",
+      "zone_type": "brand_shelf",
+      "brand": "Accessories",
+      "polygon": [[0.83, 0.02], [0.96, 0.02], [0.96, 0.45], [0.83, 0.45]]
+    },
+    {
+      "zone_id": "ZONE_FRAGRANCE_NAIL",
+      "zone_name": "Fragrance and Nail",
+      "zone_type": "service_counter",
+      "polygon": [[0.22, 0.28], [0.36, 0.28], [0.36, 0.72], [0.22, 0.72]]
+    },
+    {
+      "zone_id": "ZONE_FOH",
+      "zone_name": "Floor of House",
+      "zone_type": "floor",
+      "polygon": [[0.36, 0.28], [0.62, 0.28], [0.62, 0.72], [0.36, 0.72]]
+    },
+    {
+      "zone_id": "ZONE_MAKEUP_UNIT",
+      "zone_name": "Makeup Unit",
+      "zone_type": "service_counter",
+      "polygon": [[0.46, 0.35], [0.62, 0.35], [0.62, 0.65], [0.46, 0.65]]
+    },
+    {
+      "zone_id": "ZONE_BILLING",
+      "zone_name": "Billing / Cash Counter",
+      "zone_type": "billing",
+      "polygon": [[0.78, 0.25], [0.92, 0.25], [0.92, 0.65], [0.78, 0.65]],
+      "note": "Cash counter billing zone — used for POS correlation. Name contains 'billing'."
+    },
+    {
+      "zone_id": "ZONE_PMU",
+      "zone_name": "PMU",
+      "zone_type": "service_counter",
+      "polygon": [[0.84, 0.55], [0.96, 0.55], [0.96, 0.85], [0.84, 0.85]]
+    },
+    {
+      "zone_id": "ZONE_MAYBELLINE",
+      "zone_name": "Maybelline",
+      "zone_type": "brand_shelf",
+      "brand": "Maybelline",
+      "polygon": [[0.06, 0.75], [0.18, 0.75], [0.18, 0.98], [0.06, 0.98]]
+    },
+    {
+      "zone_id": "ZONE_FACES_CANADA",
+      "zone_name": "Faces Canada",
+      "zone_type": "brand_shelf",
+      "brand": "Faces Canada",
+      "polygon": [[0.18, 0.75], [0.30, 0.75], [0.30, 0.98], [0.18, 0.98]]
+    },
+    {
+      "zone_id": "ZONE_LAKME_COLOUR",
+      "zone_name": "Lakme Colour",
+      "zone_type": "brand_shelf",
+      "brand": "Lakme",
+      "polygon": [[0.30, 0.75], [0.40, 0.75], [0.40, 0.98], [0.30, 0.98]]
+    },
+    {
+      "zone_id": "ZONE_COLORBAR_SUGAR",
+      "zone_name": "Colorbar and Sugar",
+      "zone_type": "brand_shelf",
+      "polygon": [[0.40, 0.75], [0.52, 0.75], [0.52, 0.98], [0.40, 0.98]]
+    },
+    {
+      "zone_id": "ZONE_SWISS_RENEE_NYBAE",
+      "zone_name": "Swiss Beauty / Renee / NY Bae",
+      "zone_type": "brand_shelf",
+      "polygon": [[0.52, 0.75], [0.66, 0.75], [0.66, 0.98], [0.52, 0.98]]
+    },
+    {
+      "zone_id": "ZONE_ALPS_GOODNESS",
+      "zone_name": "Alps Goodness",
+      "zone_type": "brand_shelf",
+      "brand": "Alps Goodness",
+      "polygon": [[0.66, 0.75], [0.76, 0.75], [0.76, 0.98], [0.66, 0.98]]
+    },
+    {
+      "zone_id": "ZONE_STREAX",
+      "zone_name": "Streax",
+      "zone_type": "brand_shelf",
+      "polygon": [[0.76, 0.75], [0.86, 0.75], [0.86, 0.98], [0.76, 0.98]]
+    }
+  ],
+
+  "staff_config": {
+    "note": "Purplle store staff wear black uniforms. HSV hue for black: any hue, low saturation, low value.",
+    "uniform_color": "black",
+    "hsv_hue_low": 0,
+    "hsv_hue_high": 179,
+    "hsv_sat_max": 50,
+    "hsv_val_max": 80,
+    "use_value_channel": true
+  },
+
+  "store_hours": {
+    "open": "11:00",
+    "close": "22:00",
+    "timezone": "Asia/Kolkata"
+  }
+}
